@@ -1,24 +1,25 @@
 import pygame 
 from settings import settings
-from tanks.sprite import Sprite
+from tanks.bullet import Bullet
 
 
 screen = pygame.display.set_mode((settings.screen.width, settings.screen.height))
 pygame.init()
 
-
-class Tank(Sprite):
+class Tank(pygame.sprite.Sprite):
     # направления
     (DIR_UP, DIR_DOWN, DIR_RIGHT, DIR_LEFT) = range(4)
     # состояния
     (STATE_ALIVE, STATE_DEAD, STATE_RESPAWNING) = range(3)
     
-    def __init__(self, x, y, direction=None):
+    def __init__(self, x=None, y=None, direction=None):
         super().__init__()
         self.health = 100 # здоровье танка
         self.speed = 2 # скорость танка
         self.max_active_bullets = 1 # максимально пуль одновременно
         self.shielded = False # танк неуязвим
+        self.image = None
+        self.bullets = []
 
         self.spawn_images = [
             pygame.image.load('visual/images/respawning/spawn1.png').convert_alpha(),
@@ -29,6 +30,11 @@ class Tank(Sprite):
             pygame.image.load('visual/images/spawning_shield/spawning_shield1.png').convert_alpha(),
             pygame.image.load('visual/images/spawning_shield/spawning_shield2.png').convert_alpha()
         ]
+            
+        if x and y != None:
+            self.rect = pygame.Rect((x, y), (26, 26))
+        else:
+            self.rect = pygame.Rect(0, 0, 26, 26)    
             
         if direction == None:
             self.direction = self.DIR_UP
@@ -74,17 +80,26 @@ class Tank(Sprite):
             if self.shield_index > len(self.shield_images)-1:
                 self.shield_index = 0
             self.shield_image = self.shield_images[self.shield_index]
-            
-    def get_rect(self, obj):
         
+    def fire(self):
+        global bullets 
+        active_bullets = 0
+
+        for bullet in bullets:
+            if bullet.state == Bullet.STATE_ACTIVE:
+                active_bullets += 1
+
+        if active_bullets < self.max_active_bullets:
+            bullet = Bullet(self.rect.topleft[0], self.rect.topleft[1], self.direction)
+            self.bullets.append(bullet)
         
-        return obj.rect
             
     def explode(self):
         pass
     
     def draw(self):
-        pass
+        for bullet in self.bullets:
+            bullet.draw()
         
         
         
