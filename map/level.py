@@ -3,14 +3,12 @@ import os
 from settings import settings
 from map.myrect import MyRect
 
-screen = pygame.display.set_mode((settings.screen.width, settings.screen.height))
-
 class Level:
     (TILE_EMPTY, TILE_BRICK, TILE_WATER, TILE_STEEL, TILE_BUSH) = range(5)
     
-    TILE_SIZE = 16
+    TILE_SIZE = 9
     
-    def __init__(self, level = None):
+    def __init__(self, level = 'easy'):
         self.max_active_enemies = 4
         
         tile_images = [
@@ -27,27 +25,21 @@ class Level:
         self.tile_steel = tile_images[4]
         self.tile_bush = tile_images[5]
         
-        # клетки на которых танк через которые танк не может проехать
-        self.cannotmove_rects = [self.TILE_BRICK, self.TILE_WATER, self.TILE_STEEL]
+        self.map = []
         
-        if level == None:
-            level = "easy"
+        self.update_obstacle_rects()
+        
+        # if level == None:
+        #     level = 'easy'
             
         self.load_level(level)
-        
-    def can_move_over(self):
-        for tile in self.cannotmove_rects:
-            if tile == self.cannotmove_rects:
-                pass
                 
     def load_level(self, level = 'easy'):
-        filename  = "map/levels"+str(level)
+        filename  = "map/levels/"+str(level)
         if (not os.path.isfile(filename)):
             return False
-        level = []
         f = open(filename, "r")
         data = f.read().split("\n")
-        self.map = []
         x, y = 0, 0
         for row in data:
             for ch in row:
@@ -64,7 +56,7 @@ class Level:
             y += self.TILE_SIZE
         return True
             
-    def draw(self, tiles = None):
+    def draw(self, screen, tiles=None):   
         if tiles == None:
             tiles = [self.TILE_BRICK, self.TILE_WATER, self.TILE_STEEL, self.TILE_BUSH]
         
@@ -81,8 +73,16 @@ class Level:
                 if tile.type == self.TILE_STEEL:
                     screen.blit(self.tile_steel, tile.topleft)
                 if tile.type == self.TILE_BUSH:
-                    screen.blit(self.tile_, tile.topleft)
+                    screen.blit(self.tile_bush, tile.topleft)
                 if tile.type == self.TILE_BRICK:
                     screen.blit(self.tile_brick, tile.topleft)
                     
+    def update_obstacle_rects(self):
+        self.cannotmove_rects = []
+        for tile in self.map:
+            if tile.type in (self.TILE_BRICK, self.TILE_STEEL, self.TILE_WATER):
+                self.cannotmove_rects.append(tile)
             
+
+pygame.display.update()
+pygame.init()
